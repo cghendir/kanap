@@ -25,17 +25,15 @@ async function displayProducts() {
 
         p.setAttribute("class", "productDescription")
         p.innerText = product.description
-        
+
         article.appendChild(img)
         article.appendChild(h3)
         article.appendChild(p)
-        
+
         a.appendChild(article)
 
         items.appendChild(a)
 
-
-        console.log(article)
 
 
         /*const a = document.createElement("a");
