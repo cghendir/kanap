@@ -26,6 +26,8 @@ function changeQuantity(event) {
     priceEl.innerText = products[index].price * parseInt(quantity) + " €"
 
     localStorage.setItem("cart", JSON.stringify(products))
+
+    setTotalQuantityAndPrice(products)
 }
 
 function cartProduct() {
@@ -52,7 +54,8 @@ function cartProduct() {
         const cartStgQuantity = document.createElement("div")
         const pQuantity = document.createElement("p")
         const inputQuantity = document.createElement("input")
-
+        const cartStgDelete = document.createElement("dev")
+        const pDelete = document.createElement("p")
 
         article.classList.add("cart__item")
         article.dataset.id = product.id
@@ -64,6 +67,8 @@ function cartProduct() {
         cartSetting.classList.add("cart__item__content__settings")
         cartStgQuantity.classList.add("cart__item__content__settings__quantity")
         inputQuantity.classList.add("itemQuantity")
+        cartStgDelete.classList.add("cart__item__content__settings__delete")
+        pDelete.classList.add("deleteItem")
 
         img.setAttribute("src", product.imageUrl)
         img.setAttribute("alt", product.altTxt)
@@ -77,31 +82,53 @@ function cartProduct() {
 
 
         h2.innerText = product.name
-
         pColor.innerText = product.colors
-
         pPrice.innerText = price + " €"
-
         pQuantity.innerText = "Qté : "
+        pDelete.innerText = "Supprimer"
 
         cartItems.appendChild(article)
         article.appendChild(cartImg)
         cartImg.appendChild(img)
         article.appendChild(cartContent)
-
         cartContent.appendChild(cartDescription)
         cartContent.appendChild(cartSetting)
-
         cartDescription.appendChild(h2)
         cartDescription.appendChild(pColor)
         cartDescription.appendChild(pPrice)
-
         cartSetting.appendChild(cartStgQuantity)
-
+        cartSetting.appendChild(cartStgDelete)
         cartStgQuantity.appendChild(pQuantity)
         cartStgQuantity.appendChild(inputQuantity)
+        cartStgDelete.appendChild(pDelete)
     }
 
+    setTotalQuantityAndPrice(products)
+
+
+}
+
+function setTotalQuantityAndPrice(products) {
+    const totalPrice = document.getElementById("totalPrice")
+    const totalQuantity = document.getElementById("totalQuantity")
+    const totalPriceSum = products.reduce(function(previousValue, currentValue, currentIndex) {
+        if(currentIndex === 1){
+            return previousValue.price * previousValue.quantity + currentValue.price * currentValue.quantity
+        }else {
+            return previousValue + currentValue.price * currentValue.quantity
+        }
+    })
+
+    const totalquantitySum = products.reduce(function(previousValue, currentValue, currentIndex) {
+        if(currentIndex === 1){
+            return previousValue.quantity + currentValue.quantity
+        }else {
+            return previousValue + currentValue.quantity
+        }
+    })
+
+    totalPrice.innerText = totalPriceSum
+    totalQuantity.innerText = totalquantitySum
 }
 
 cartProduct()
