@@ -1,20 +1,10 @@
-async function getProduct() {
-    const paramString = window.location.search
-    const paramSearch = new URLSearchParams(paramString)
-
-    const url = "http://localhost:3000/api/products/" + paramSearch.get("id")
-    const res = await fetch(url)
-    const product = await res.json()
-    return product
-}
 async function displayProduct() {
-    const product = await getProduct()
+    const product = await getProductWithId()
     const image = document.getElementsByClassName("item__img")[0]
     const title = document.getElementById("title")
     const price = document.getElementById("price")
     const description = document.getElementById("description")
     const colors = document.getElementById("colors")
-
     const img = document.createElement("img")
 
     img.setAttribute("src", product.imageUrl)
@@ -36,14 +26,14 @@ async function displayProduct() {
 }
 
 async function addToCart() {
-    const product = await getProduct()
+    const product = await getProductWithId()
     const elColors = document.getElementById("colors")
     const elQuantity = document.getElementById("quantity")
 
     const color = elColors.value
     const quantity = parseInt(elQuantity.value)
 
-    const error = document.getElementById("cart-error")
+    const error = document.getElementById("basket-error")
     if (error) {
         error.remove()
     }
@@ -54,10 +44,10 @@ async function addToCart() {
         const error = createCartError()
         itemContainer.insertBefore(error, btnContainer)
         return false;
-        
+
     }
 
-    let cart = localStorage.getItem("cart")
+    let cart = localStorage.getItem("basket")
     if (!cart) {
         cart = [];
     } else {
@@ -68,7 +58,6 @@ async function addToCart() {
         imageUrl: product.imageUrl,
         id: product._id,
         name: product.name,
-        price: product.price,
         colors: color,
         quantity: quantity
     }
@@ -87,8 +76,7 @@ async function addToCart() {
         cart[findIndex].quantity = cart[findIndex].quantity + quantity;
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
-
+    localStorage.setItem("basket", JSON.stringify(cart));
 
 
 }
@@ -96,15 +84,14 @@ async function addToCart() {
 function createCartError() {
     const p = document.createElement("p")
     p.style.cssText = "text-align:center; margin-top:35px;margin-bottom:0;color:#fbbcbc;"
-    p.innerText = "vous devez sélectionnez une couleur et une quantité"
-    p.setAttribute("id", "cart-error")
+    p.innerText = "Vous devez sélectionnez une couleur et une quantité."
+    p.setAttribute("id", "basket-error")
     return p
 }
 
 function addActionToBtnCart() {
     const button = document.getElementById("addToCart")
     button.addEventListener("click", addToCart)
-
 }
 
 displayProduct()

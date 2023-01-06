@@ -1,8 +1,3 @@
-async function getProducts() {
-    const res = await fetch("http://localhost:3000/api/products")
-    const products = await res.json()
-    return products
-}
 async function displayProducts() {
     const products = await getProducts()
     const items = document.getElementById("items")
@@ -33,26 +28,6 @@ async function displayProducts() {
         a.appendChild(article)
 
         items.appendChild(a)
-
-
-
-        /*const a = document.createElement("a");
-        let item = document.getElementById("items");
-        a.setAttribute("id", "42");
-        item.appendChild(a);
-        let button = document.getElementById("42");
-        button.appendChild(article);
-        
-
-        const img = document.createElement("img");
-        let articles = document.getElementsByTagName("article");
-        articles.appendChild(img);
-
-        const h3 = document.createElement("h3");
-        document.getElementsByTagName("article");
-        article.appendChild(h3);
-        h3.classList.add("productionName");*/
-
     }
 }
 displayProducts()
