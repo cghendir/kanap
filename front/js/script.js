@@ -1,3 +1,8 @@
+/**
+ * Récupere les produitss depuis l'API
+ * Parcours les produits récupèré
+ * Construit et affiche le DOM html de chaque produit
+ */
 async function displayProducts() {
     const products = await getProducts()
     const items = document.getElementById("items")
@@ -30,6 +35,8 @@ async function displayProducts() {
         items.appendChild(a)
     }
 }
+
+
 displayProducts()
 
 

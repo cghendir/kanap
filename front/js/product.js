@@ -1,3 +1,7 @@
+/**
+ * Récupère les produit par Id depuis l'API
+ * Construit le DOM html du produit
+ */
 async function displayProduct() {
     const product = await getProductWithId()
     const image = document.getElementsByClassName("item__img")[0]
@@ -22,9 +26,12 @@ async function displayProduct() {
     description.innerText = product.description
 
     image.appendChild(img)
-
 }
 
+/**
+ * Ajout ou mise a jour d'un produit dans le LocalStorage
+ * @returns {Promise<void>}
+ */
 async function addToCart() {
     const product = await getProductWithId()
     const elColors = document.getElementById("colors")
@@ -62,25 +69,23 @@ async function addToCart() {
         quantity: quantity
     }
 
-    const findIndex = cart.findIndex(function (p) {
-        if (p.id === data.id && p.colors === data.colors) {
-            return true;
-        } else {
-            return false;
-        }
-    });
+    const findIndex = findIndexByIdAndColor(cart, data.id, data.colors)
 
     if (findIndex < 0) {
         cart.push(data);
+        alert("Le produit " + data.name + " a été ajouté au panier.") 
     } else {
         cart[findIndex].quantity = cart[findIndex].quantity + quantity;
+        alert("La quantité du produit " + data.name + " a été modifié.")
     }
 
     localStorage.setItem("basket", JSON.stringify(cart));
-
-
 }
 
+/**
+ * Construit un DOM html d'erreur
+ * @returns {HTMLParagraphElement}
+ */
 function createCartError() {
     const p = document.createElement("p")
     p.style.cssText = "text-align:center; margin-top:35px;margin-bottom:0;color:#fbbcbc;"
@@ -89,10 +94,15 @@ function createCartError() {
     return p
 }
 
+/**
+ * Ajout de l'action ajout au panier au bouton
+ * @returns {void}
+ */
 function addActionToBtnCart() {
     const button = document.getElementById("addToCart")
     button.addEventListener("click", addToCart)
 }
+
 
 displayProduct()
 addActionToBtnCart()

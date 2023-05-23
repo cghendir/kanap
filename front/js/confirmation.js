@@ -1,3 +1,7 @@
+/**
+ * Récupère l'orderId depuis l'url
+ * @returns {void}
+ */
 function displayOrderId() {
     const orderConfirmationId = document.getElementById("orderId")
 
@@ -6,7 +10,7 @@ function displayOrderId() {
     const orderId = urlParams.get('orderId');
 
     orderConfirmationId.innerText = orderId
-
 }
+
 
 displayOrderId()

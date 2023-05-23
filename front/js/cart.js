@@ -1,8 +1,19 @@
+/** Variable permettant de sauvegarder tout les produits provenant de l'API 
+ * afin de récupèrer le prix correct de chaque produit inséré au panier */
 let allProducts = []
 
+/** Ajout de l'action au bouton ayany pour ID "order" */
 const orderBtn = document.getElementById("order")
 orderBtn.addEventListener("click", orderAction)
 
+/**
+ * Valide si un champ n'est pas vide 
+ * affiche un message d'erreur en cas de champ vide 
+ * @param {string} value 
+ * @param {string} msgError 
+ * @param {HTMLElement} errorEl 
+ * @returns {boolean}
+ */
 function validateRequired(value, msgError, errorEl) {
     errorEl.innerText = ""
     if (!value) {
@@ -13,6 +24,15 @@ function validateRequired(value, msgError, errorEl) {
     }
 }
 
+/**
+ * Valide le format d'un champ
+ * affiche unmessage d'erreur en cas de format invalide
+ * @param {string} pattern 
+ * @param {string} value 
+ * @param {string} error 
+ * @param {HTMLElement} errorEl 
+ * @returns {boolean}
+ */
 function validateRegEx(pattern, value, error, errorEl) {
     if (!pattern.test(value)) {
         errorEl.innerText = error
@@ -22,6 +42,30 @@ function validateRegEx(pattern, value, error, errorEl) {
     }
 }
 
+function validateMaxLength(len, value, error, errorEl) {
+    if (value?.length > len) {
+        errorEl.innerText = error
+        return false
+    } else {
+        return true
+    }
+}
+
+function validateMinLength(len, value, error, errorEl) {
+    if (value?.length < len) {
+        errorEl.innerText = error
+        return false
+    } else {
+        return true
+    }
+}
+
+/**
+ * Valide tout les champs lié a la commande 
+ * Soumet les données de commande a l'API
+ * @param {Event} event 
+ * @returns {Promise<void>}
+ */
 async function orderAction(event) {
     event.preventDefault()
 
@@ -30,8 +74,12 @@ async function orderAction(event) {
     const firstName = elFirstName.value
     let isValidFirstName = validateRequired(firstName, "Veuillez entrez votre Prénom.", elFirstNameError)
 
+    if (isValidFirstName){
+        isValidFirstName = validateMaxLength(41, firstName, "Le prénom ne doit pas dépasser 40 caractères.", elFirstNameError)
+    }
+
     if (isValidFirstName) {
-        isValidFirstName = validateRegEx(/^[a-z\s-]{1,40}$/i, firstName, "Le prénom ne doit pas dépasser 40 caractères.", elFirstNameError)
+        isValidFirstName = validateRegEx(/[a-zA-Z\s]+/i, firstName, "Le format du prénom est invalide.", elFirstNameError)
     }
 
     const elLastName = document.getElementById("lastName")
@@ -39,17 +87,26 @@ async function orderAction(event) {
     const lastName = elLastName.value
     let isValidLastName = validateRequired(lastName, "Veuillez entrez votre Nom.", elLastNameError)
 
+    if (isValidLastName){
+        isValidLastName = validateMaxLength(41, lastName, "Le nom ne doit pas dépasser 40 caractères.", elLastNameError)
+    }
+
     if (isValidLastName) {
-        isValidLastName = validateRegEx(/^[a-z\s-]{1,40}$/i, lastName, "Le nom ne doit pas dépasser 40 caractères", elLastNameError)
+        isValidLastName = validateRegEx(/[a-z\s-]+/i, lastName, "Le format du nom est invalide.", elLastNameError)
     }
 
     const elAddress = document.getElementById("address")
     const elAddressError = document.getElementById("addressErrorMsg")
     const address = elAddress.value
     let isValidAddress = validateRequired(address, "Veuillez entrez votre Adresse.", elAddressError)
+    
+
+    if (isValidAddress){
+        isValidAddress = validateMinLength(3, address, "L'adresse doit dépasser 3 caractères.", elAddressError)
+    }
 
     if (isValidAddress) {
-        isValidAddress = validateRegEx(/^[a-zA-Z0-9\s,.'-]{3,}$/, address, "L'adresse doit faire plus de 3 caractères", elAddressError)
+        isValidAddress = validateRegEx(/^[a-zA-Z0-9\s,.'-]{3,}$/, address, "Le format de l'adresse est invalide", elAddressError)
     }
 
     const elCity = document.getElementById("city")
@@ -57,8 +114,13 @@ async function orderAction(event) {
     const city = elCity.value
     let isValidCity = validateRequired(city, "Veuillez entrez votre Ville.", elCityError)
 
+
+    if (isValidCity){
+        isValidCity = validateMinLength(3, city, "La ville doit dépasser 3 caractères.", elCityError)
+    }
+
     if (isValidCity) {
-        isValidCity = validateRegEx(/^[a-zA-Z0-9\s,.'-]{3,}$/, city, "La ville doit faire plus de 3 caractères", elCityError)
+        isValidCity = validateRegEx(/[a-zA-Z0-9\s,.'-]+/, city, "Le format de la ville est invalide.", elCityError)
     }
 
     const elEmail = document.getElementById("email")
@@ -105,11 +167,17 @@ async function orderAction(event) {
         })
     })
     const data = await res.json()
-    
+
+    localStorage.removeItem("basket")
     window.location.href = "./confirmation.html?orderId=" + data.orderId
-    console.log(data)
 }
 
+/**
+ * Modifie la quantité d'un produit dans le panier
+ * Recalcule la quantité et prix total du panier
+ * @param {InputEvent} event 
+ * @returns {void}
+ */
 function changeQuantity(event) {
     const input = event.target
     const quantity = input.value
@@ -123,13 +191,7 @@ function changeQuantity(event) {
         return
     }
 
-    const index = products.findIndex(function (product) {
-        if (product.id === id && product.colors === color) {
-            return true
-        } else {
-            return false
-        }
-    })
+    const index = findIndexByIdAndColor(products, id, color)
     if (index < 0) {
         return
     }
@@ -144,6 +206,11 @@ function changeQuantity(event) {
     displayTotalPriceAndQuantity(products)
 }
 
+/**
+ * Récupère et retournele prix d'un produit a partir de son ID
+ * @param {string} id 
+ * @returns {number|null}
+ */
 function getProductPrice(id) {
     const findIndex = allProducts.findIndex(function (p) {
         if (p._id === id) {
@@ -159,6 +226,11 @@ function getProductPrice(id) {
     }
 }
 
+/**
+ * Construit et affiche le DOM Html d'un produit
+ * @param {Object} product 
+ * @returns {void}
+ */
 function displayCartProduct(product) {
     const cartItems = document.getElementById("cart__items")
 
@@ -228,9 +300,13 @@ function displayCartProduct(product) {
     cartStgQuantity.appendChild(pQuantity)
     cartStgQuantity.appendChild(inputQuantity)
     cartStgDelete.appendChild(pDelete)
-
 }
 
+/**
+ * calcule et affiche la quantité et le prix total des produits
+ * @param {Object[]} products 
+ * @returns {void}
+ */
 function displayTotalPriceAndQuantity(products) {
     let total = 0
     let quantity = 0
@@ -246,9 +322,14 @@ function displayTotalPriceAndQuantity(products) {
     const elTotalQuantity = document.getElementById("totalQuantity")
     elTotalPrice.innerText = total
     elTotalQuantity.innerText = quantity
-
 }
 
+/**
+ * Récupère les produit du panier 
+ * parcours les produits récupèré 
+ * construit le DOM Html de chaque produit
+ * @returns {Promise<void>}
+ */
 async function displayCart() {
     allProducts = await getProducts()
     const products = getProductsInStorage()
@@ -261,9 +342,13 @@ async function displayCart() {
         displayCartProduct(product)
     }
     displayTotalPriceAndQuantity(products)
-
 }
 
+/**
+ * Supprime un produit du panier et recalcule la quantité et le prix total des produits
+ * @param {Event} event 
+ * @returns {void}
+ */
 function deleteCartProduct(event) {
     const input = event.target
     const article = input.closest("article")
@@ -275,8 +360,8 @@ function deleteCartProduct(event) {
         return
     }
 
-    const findIndex = products.findIndex(function (p) {
-        if (p.id === productId && p.colors === productColor) {
+    const findIndex = products.findIndex(function (product) {
+        if (product.id === productId && product.colors === productColor) {
             return true
         } else {
             return false
@@ -291,10 +376,6 @@ function deleteCartProduct(event) {
     article.remove()
 
     displayTotalPriceAndQuantity(products)
-}
-
-function postToConfirmation() {
-
 }
 
 
